@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -28,8 +28,12 @@
       </nav>
       <div class="sidebar-card">
         <p class="sidebar-label">Operational status</p>
-        <div class="status-pill success">All systems compliant</div>
-        <p class="muted">Last registry sync: 2 minutes ago</p>
+        <div class="status-pill success" id="opsStatus">API online</div>
+        <p class="muted" id="syncStatus">Connecting to live registry…</p>
+      </div>
+      <div class="sidebar-card categories-card">
+        <p class="sidebar-label">Category distribution</p>
+        <div id="categoryList" class="category-list"></div>
       </div>
     </aside>
 
@@ -38,7 +42,7 @@
         <div>
           <p class="eyebrow accent">Skills Governance Platform</p>
           <h2>Enterprise visibility for every skill, policy, and compliance check.</h2>
-          <p class="hero-copy">Track registry health, compare capabilities, and inspect security posture in one polished static dashboard built for GitHub Pages.</p>
+          <p class="hero-copy">Live registry data, real API-backed search, side-by-side skill comparison, timeline history, and simulated security scans in one operational dashboard.</p>
         </div>
         <div class="hero-actions">
           <button class="button primary" data-scroll="#registry">View registry</button>
@@ -49,23 +53,23 @@
       <section class="stats-grid">
         <article class="stat-card glass">
           <p>Total skills</p>
-          <h3 class="counter" data-target="148">0</h3>
-          <span class="trend up">+12 this quarter</span>
+          <h3 class="counter" data-stat="total_skills">0</h3>
+          <span class="trend up">Live registry count</span>
         </article>
         <article class="stat-card glass">
           <p>Categories</p>
-          <h3 class="counter" data-target="18">0</h3>
-          <span class="trend up">Cross-functional coverage</span>
+          <h3 class="counter" data-stat="categories">0</h3>
+          <span class="trend up">Enterprise coverage</span>
         </article>
         <article class="stat-card glass">
           <p>Compliance score</p>
-          <h3><span class="counter" data-target="97">0</span>%</h3>
-          <span class="trend up">Above enterprise target</span>
+          <h3><span class="counter" data-stat="compliance_percent">0</span>%</h3>
+          <span class="trend up">Policy-aligned skills</span>
         </article>
         <article class="stat-card glass">
           <p>Critical findings</p>
-          <h3 class="counter" data-target="3">0</h3>
-          <span class="trend down">2 require action</span>
+          <h3 class="counter" data-stat="critical_findings">0</h3>
+          <span class="trend down">Security attention required</span>
         </article>
       </section>
 
@@ -76,7 +80,7 @@
             <h3>Curated enterprise skills</h3>
           </div>
           <div class="search-wrap">
-            <input id="skillSearch" type="search" placeholder="Search by name, owner, or category" />
+            <input id="skillSearch" type="search" placeholder="Search by name, owner, category, or controls" />
           </div>
         </div>
         <div class="skill-grid" id="skillGrid"></div>
@@ -99,20 +103,20 @@
       <section class="panel" id="compliance">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Security & compliance</p>
-            <h3>Scan findings and remediation status</h3>
+            <p class="eyebrow">Security</p>
+            <h3>Scan posture and timeline history</h3>
           </div>
         </div>
         <div class="scan-layout">
           <div class="scan-list" id="scanList"></div>
           <div class="scan-detail glass" id="scanDetail">
-            <p class="muted">Select a finding to inspect detailed guidance.</p>
+            <p class="muted">Select a skill to see the latest simulated finding.</p>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <script src="app.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>

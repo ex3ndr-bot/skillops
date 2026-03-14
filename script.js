@@ -1,20 +1,248 @@
-const skills=[{id:'skill-guardian',name:'Skill Guardian',owner:'Security Engineering',version:'v4.8.2',summary:'Automates policy validation, prompt hardening, and secret leakage detection before skill release.',adoption:'high',score:97,scansPassed:42,executions:'1.3M/mo',tags:['Security','Compliance','Policy'],updated:'8 minutes ago'},{id:'workflow-pilot',name:'Workflow Pilot',owner:'Operations AI',version:'v3.2.0',summary:'Builds repeatable workflows with approval gates, observability, and rollback controls.',adoption:'high',score:95,scansPassed:37,executions:'920K/mo',tags:['Workflow','Automation','Ops'],updated:'23 minutes ago'},{id:'compare-lens',name:'Compare Lens',owner:'Platform UX',version:'v2.6.1',summary:'Evaluates skill drift across teams and highlights capability, cost, and compliance differences.',adoption:'medium',score:91,scansPassed:31,executions:'410K/mo',tags:['Analytics','Governance','UX'],updated:'1 hour ago'},{id:'audit-stream',name:'Audit Stream',owner:'Risk & Audit',version:'v5.0.0',summary:'Produces immutable audit trails, reviewer attestations, and export-ready evidence bundles.',adoption:'high',score:96,scansPassed:44,executions:'780K/mo',tags:['Audit','Evidence','Export'],updated:'2 hours ago'},{id:'policy-copilot',name:'Policy Copilot',owner:'Legal Tech',version:'v1.9.4',summary:'Maps enterprise policy requirements into deployable skill rules, guidance, and review checklists.',adoption:'medium',score:89,scansPassed:26,executions:'260K/mo',tags:['Policy','Legal','Governance'],updated:'Today, 09:18'},{id:'release-radar',name:'Release Radar',owner:'Developer Experience',version:'v2.4.7',summary:'Tracks release risk, changelog integrity, and deployment readiness for enterprise skill launches.',adoption:'low',score:86,scansPassed:19,executions:'120K/mo',tags:['Release','DX','Observability'],updated:'Today, 07:42'}];
-const scans=[{name:'Prompt injection defense gaps',severity:'critical',skill:'Policy Copilot',status:'Mitigation in progress',owner:'Legal Tech',summary:'User-supplied document snippets can still bypass a downstream classification guard in one review path.',findings:['Sanitization pattern missing for imported markdown blocks','Secondary classifier runs after tool selection','Regression test coverage incomplete for multilingual payloads'],remediation:['Move risk classification ahead of tool routing','Normalize imported markdown and HTML fragments','Add seeded prompt-injection test corpus to CI']},{name:'Outdated dependency signature',severity:'high',skill:'Release Radar',status:'Patch available',owner:'Developer Experience',summary:'An older visualization package ships with a vulnerable transitive parser below the approved version floor.',findings:['Version policy breached in analytics bundle','SBOM mismatch detected during nightly scan'],remediation:['Upgrade parser chain to approved baseline','Regenerate SBOM and lockfile attestations']},{name:'Incomplete audit retention mapping',severity:'medium',skill:'Audit Stream',status:'Review scheduled',owner:'Risk & Audit',summary:'Retention mappings for one regional archive policy are present but not linked to export templates.',findings:['Regional policy tag exists without export binding','No customer-visible failure yet'],remediation:['Bind retention policy to export template','Add regional archive assertion to release checklist']},{name:'Over-permissive telemetry scope',severity:'low',skill:'Workflow Pilot',status:'Queued',owner:'Operations AI',summary:'Telemetry includes one extra non-sensitive metadata field beyond the current minimum-needed spec.',findings:['Field not used in dashboards','No regulated data exposure identified'],remediation:['Trim payload shape','Update schema contract and docs']}];
-const updates=[{title:'Skill Guardian published v4.8.2 with hardened secret scanning',detail:'Expanded entropy heuristics and runtime credential suppression.',time:'8 minutes ago'},{title:'Workflow Pilot rollout advanced to 14 more teams',detail:'Approval-gated automation templates now enabled for finance ops.',time:'23 minutes ago'},{title:'Compare Lens added cost variance visualization',detail:'Side-by-side benchmarking now flags material execution deltas.',time:'1 hour ago'},{title:'Audit Stream completed evidence export redesign',detail:'New evidence bundles align with quarterly auditor requests.',time:'2 hours ago'},{title:'Release Radar fixed changelog validation race condition',detail:'Eliminated stale cache reads affecting one deployment lane.',time:'Today, 07:42'}];
-const history=[{version:'v5.0',date:'Mar 2026',title:'Governance release',summary:'Introduced side-by-side comparison, richer scanning detail, and role-based evidence exports.',changes:[{label:'+ Comparison workspace',type:'added'},{label:'~ Security detail panes',type:'improved'},{label:'✓ Responsive nav refresh',type:'fixed'}]},{version:'v4.8',date:'Feb 2026',title:'Security uplift',summary:'Expanded prompt hardening baselines, dependency attestations, and alert routing.',changes:[{label:'+ Injection test corpus',type:'added'},{label:'~ Severity triage colors',type:'improved'},{label:'✓ Scan queue bug',type:'fixed'}]},{version:'v4.4',date:'Jan 2026',title:'Platform analytics refresh',summary:'Introduced live adoption metrics and more granular ownership mapping.',changes:[{label:'+ Dashboard counters',type:'added'},{label:'~ Team-level filters',type:'improved'}]},{version:'v4.0',date:'Dec 2025',title:'Enterprise foundation',summary:'Standardized skill lifecycle states and enterprise policy controls.',changes:[{label:'+ Lifecycle governance',type:'added'},{label:'~ Policy controls',type:'improved'}]}];
-const state={query:'',selectedScan:0};
-const navItems=[...document.querySelectorAll('.nav-item')],panels=[...document.querySelectorAll('.panel')],skillsGrid=document.getElementById('skillsGrid'),catalogGrid=document.getElementById('catalogGrid'),skillSearch=document.getElementById('skillSearch'),updatesFeed=document.getElementById('updatesFeed'),fullUpdatesFeed=document.getElementById('fullUpdatesFeed'),scanList=document.getElementById('scanList'),scanDetail=document.getElementById('scanDetail'),compareA=document.getElementById('compareA'),compareB=document.getElementById('compareB'),compareGrid=document.getElementById('compareGrid'),timeline=document.getElementById('timeline'),sidebar=document.getElementById('sidebar'),sidebarToggle=document.getElementById('sidebarToggle');
-function esc(s){return s.replace(/[.*+?^${}()|[\]\]/g,'\$&')}
-function highlight(text,query){if(!query)return text;return text.replace(new RegExp('('+esc(query)+')','ig'),'<mark>$1</mark>')}
-function skillCard(skill){const q=state.query.trim();const hay=`${skill.name} ${skill.owner} ${skill.summary} ${skill.tags.join(' ')}`.toLowerCase();if(q&&!hay.includes(q.toLowerCase()))return '';return `<article class="skill-card" tabindex="0"><div class="skill-top"><div><h4>${highlight(skill.name,q)}</h4><div class="meta-row"><span class="meta-chip">${highlight(skill.owner,q)}</span><span class="meta-chip adoption-${skill.adoption}">${skill.adoption} adoption</span></div></div><span class="pill">${skill.version}</span></div><p>${highlight(skill.summary,q)}</p><div class="meta-row"><span class="meta-chip">Score ${skill.score}</span><span class="meta-chip">${skill.scansPassed} scans passed</span><span class="meta-chip">${skill.executions}</span></div><div class="tag-row" style="margin-top:14px;">${skill.tags.map(tag=>`<span class="tag">${highlight(tag,q)}</span>`).join('')}</div></article>`}
-function renderSkills(){const html=skills.map(skillCard).filter(Boolean).join('');const empty='<div class="card"><p class="muted">No skills match that search yet.</p></div>';skillsGrid.innerHTML=html||empty;catalogGrid.innerHTML=html||empty}
-function renderUpdates(){const markup=updates.map(item=>`<article class="feed-item"><strong>${item.title}</strong><span class="muted">${item.detail}</span><time>${item.time}</time></article>`).join('');updatesFeed.innerHTML=markup;fullUpdatesFeed.innerHTML=markup}
-function renderScans(){scanList.innerHTML=scans.map((scan,index)=>`<button class="scan-item ${index===state.selectedScan?'active':''}" data-index="${index}"><div class="section-head" style="margin-bottom:10px;"><strong>${scan.name}</strong><span class="severity severity-${scan.severity}">${scan.severity}</span></div><div class="muted">${scan.skill}</div><div class="muted">${scan.status}</div></button>`).join('');const scan=scans[state.selectedScan];scanDetail.innerHTML=`<div class="section-head"><div><p class="eyebrow">${scan.skill}</p><h3>${scan.name}</h3></div><span class="severity severity-${scan.severity}">${scan.severity}</span></div><p class="muted">${scan.summary}</p><div class="detail-grid"><div class="detail-block"><p class="eyebrow">Status</p><strong>${scan.status}</strong><p class="muted">Owner: ${scan.owner}</p></div><div class="detail-block"><p class="eyebrow">Remediation readiness</p><strong>${scan.remediation.length} actions</strong><p class="muted">Coordinated through security review board</p></div><div class="detail-block"><p class="eyebrow">Findings</p><ul>${scan.findings.map(item=>`<li>${item}</li>`).join('')}</ul></div><div class="detail-block"><p class="eyebrow">Recommended actions</p><ul>${scan.remediation.map(item=>`<li>${item}</li>`).join('')}</ul></div></div>`;document.querySelectorAll('.scan-item').forEach(btn=>btn.addEventListener('click',()=>{state.selectedScan=Number(btn.dataset.index);renderScans()}))}
-function populateCompareSelects(){const options=skills.map(skill=>`<option value="${skill.id}">${skill.name}</option>`).join('');compareA.innerHTML=options;compareB.innerHTML=options;compareA.value=skills[0].id;compareB.value=skills[1].id}
-function renderCompare(){const a=skills.find(skill=>skill.id===compareA.value)||skills[0],b=skills.find(skill=>skill.id===compareB.value)||skills[1];const card=skill=>`<article class="compare-card"><div class="section-head"><div><p class="eyebrow">${skill.owner}</p><h3>${skill.name}</h3></div><span class="pill">${skill.version}</span></div><p class="muted">${skill.summary}</p><div class="metric-row"><span>Compliance score</span><strong>${skill.score}/100</strong></div><div class="metric-row"><span>Scans passed</span><strong>${skill.scansPassed}</strong></div><div class="metric-row"><span>Monthly executions</span><strong>${skill.executions}</strong></div><div class="metric-row"><span>Adoption tier</span><strong>${skill.adoption}</strong></div><div class="metric-row"><span>Updated</span><strong>${skill.updated}</strong></div><div class="tag-row" style="margin-top:16px;">${skill.tags.map(tag=>`<span class="tag">${tag}</span>`).join('')}</div></article>`;compareGrid.innerHTML=card(a)+card(b)}
-function renderTimeline(){timeline.innerHTML=history.map(item=>`<article class="timeline-item"><div class="section-head"><div><p class="eyebrow">${item.date}</p><h3>${item.version} · ${item.title}</h3></div></div><p class="muted">${item.summary}</p><div class="diff-row">${item.changes.map(change=>`<span class="diff-badge ${change.type}">${change.label}</span>`).join('')}</div></article>`).join('')}
-function animateCounters(){document.querySelectorAll('.counter').forEach(counter=>{const target=Number(counter.dataset.target||'0'),duration=1200,start=performance.now();function step(now){const progress=Math.min((now-start)/duration,1),eased=1-Math.pow(1-progress,3);counter.textContent=String(Math.round(target*eased));if(progress<1)requestAnimationFrame(step)}requestAnimationFrame(step)})}
-navItems.forEach(item=>item.addEventListener('click',()=>{navItems.forEach(nav=>nav.classList.remove('active'));panels.forEach(panel=>panel.classList.remove('active'));item.classList.add('active');document.getElementById(item.dataset.target).classList.add('active');sidebar.classList.remove('open')}));
-skillSearch.addEventListener('input',e=>{state.query=e.target.value;renderSkills()});
-sidebarToggle.addEventListener('click',()=>sidebar.classList.toggle('open'));compareA.addEventListener('change',renderCompare);compareB.addEventListener('change',renderCompare);
-renderSkills();renderUpdates();renderScans();populateCompareSelects();renderCompare();renderTimeline();animateCounters();
+const state = {
+  skills: [],
+  stats: { total_skills: 0, categories: 0, compliance_percent: 0, critical_findings: 0 },
+  categories: [],
+  comparison: null,
+  findings: [],
+  timelines: {}
+};
+
+const skillGrid = document.getElementById('skillGrid');
+const searchInput = document.getElementById('skillSearch');
+const compareA = document.getElementById('compareA');
+const compareB = document.getElementById('compareB');
+const comparisonGrid = document.getElementById('comparisonGrid');
+const scanList = document.getElementById('scanList');
+const scanDetail = document.getElementById('scanDetail');
+const categoryList = document.getElementById('categoryList');
+const syncStatus = document.getElementById('syncStatus');
+const opsStatus = document.getElementById('opsStatus');
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    ...options
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`${response.status} ${response.statusText}: ${detail}`);
+  }
+  return response.json();
+}
+
+function animateValue(el, target) {
+  const duration = 900;
+  const start = Number(el.dataset.value || 0);
+  const startTime = performance.now();
+  const step = now => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(start + (target - start) * eased);
+    el.textContent = value.toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+    else el.dataset.value = String(target);
+  };
+  requestAnimationFrame(step);
+}
+
+function renderStats() {
+  document.querySelectorAll('[data-stat]').forEach(el => {
+    const key = el.dataset.stat;
+    animateValue(el, Number(state.stats[key] || 0));
+  });
+}
+
+function severityClass(skill) {
+  return (skill.scan_summary?.severity || 'low').toLowerCase();
+}
+
+function renderSkills(skills = state.skills) {
+  skillGrid.innerHTML = skills.map(skill => `
+    <article class="skill-card glass ${severityClass(skill)}">
+      <div class="skill-card-header">
+        <div>
+          <p class="eyebrow">${skill.category}</p>
+          <h4>${skill.name}</h4>
+        </div>
+        <span class="status-chip ${skill.status}">${skill.status}</span>
+      </div>
+      <p class="muted">${skill.description}</p>
+      <div class="meta-grid">
+        <div><span>Owner</span><strong>${skill.owner}</strong></div>
+        <div><span>Version</span><strong>${skill.version}</strong></div>
+        <div><span>Security</span><strong>${skill.security_level}</strong></div>
+        <div><span>Scan</span><strong>${skill.scan_summary?.severity || 'unknown'} (${skill.scan_summary?.score || 0})</strong></div>
+      </div>
+      <div class="capability-list">
+        ${(skill.capabilities || []).map(item => `<span>${item}</span>`).join('')}
+      </div>
+      <div class="card-actions">
+        <label class="compare-check"><input class="compare-toggle" type="checkbox" data-skill="${skill.id}"> Compare</label>
+        <button class="button tertiary" data-scan="${skill.id}">Run scan</button>
+      </div>
+    </article>
+  `).join('');
+
+  document.querySelectorAll('[data-scan]').forEach(btn => btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Scanning…';
+    try {
+      await api(`/api/scan/${btn.dataset.scan}`, { method: 'POST' });
+      await refreshData(searchInput.value.trim());
+    } catch (error) {
+      alert(`Scan failed: ${error.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Run scan';
+    }
+  }));
+
+  document.querySelectorAll('.compare-toggle').forEach(box => {
+    box.checked = [compareA.value, compareB.value].includes(box.dataset.skill);
+    box.addEventListener('change', () => syncCompareFromCheckbox(box));
+  });
+}
+
+function populateCategories() {
+  categoryList.innerHTML = state.categories.map(item => `
+    <div class="category-row">
+      <span>${item.category}</span>
+      <strong>${item.count}</strong>
+    </div>
+  `).join('');
+}
+
+function populateCompare() {
+  const options = state.skills.map(skill => `<option value="${skill.id}">${skill.name}</option>`).join('');
+  compareA.innerHTML = options;
+  compareB.innerHTML = options;
+  if (state.skills[0]) compareA.value = state.skills[0].id;
+  if (state.skills[1]) compareB.value = state.skills[1].id;
+}
+
+async function renderComparison() {
+  if (!compareA.value || !compareB.value) return;
+  const data = await api(`/api/compare?a=${encodeURIComponent(compareA.value)}&b=${encodeURIComponent(compareB.value)}`);
+  state.comparison = data;
+  comparisonGrid.innerHTML = [data.a, data.b].map(skill => `
+    <section class="compare-panel glass">
+      <p class="eyebrow">${skill.category}</p>
+      <h4>${skill.name}</h4>
+      <div class="compare-table">
+        <div class="compare-row"><strong>Owner</strong><span>${skill.owner}</span></div>
+        <div class="compare-row"><strong>Version</strong><span>${skill.version}</span></div>
+        <div class="compare-row"><strong>Status</strong><span>${skill.status}</span></div>
+        <div class="compare-row"><strong>Security</strong><span>${skill.security_level}</span></div>
+        <div class="compare-row"><strong>Maturity</strong><span>${skill.maturity}</span></div>
+        <div class="compare-row"><strong>Coverage</strong><span>${skill.coverage}</span></div>
+        <div class="compare-row"><strong>Risk</strong><span>${skill.risk}</span></div>
+        <div class="compare-row"><strong>Capabilities</strong><span>${(skill.capabilities || []).join(', ')}</span></div>
+      </div>
+    </section>
+  `).join('');
+
+  document.querySelectorAll('.compare-toggle').forEach(box => {
+    box.checked = [compareA.value, compareB.value].includes(box.dataset.skill);
+  });
+}
+
+async function enrichFindings(skills) {
+  const top = skills.slice(0, 5);
+  const items = [];
+  for (const skill of top) {
+    const timeline = await api(`/api/timeline/${skill.id}`);
+    state.timelines[skill.id] = timeline.timeline;
+    items.push({ skill, timeline: timeline.timeline });
+  }
+  state.findings = items;
+  renderFindings();
+}
+
+function renderFindings() {
+  scanList.innerHTML = state.findings.map((item, index) => `
+    <article class="scan-item ${severityClass(item.skill)} ${index === 0 ? 'active' : ''}" data-index="${index}">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+        <span class="severity ${severityClass(item.skill)}">${item.skill.scan_summary?.severity || 'low'}</span>
+        <span class="eyebrow">${item.skill.name}</span>
+      </div>
+      <h4>${item.skill.owner}</h4>
+      <p class="muted">${item.skill.description}</p>
+    </article>
+  `).join('');
+
+  const renderDetail = index => {
+    const item = state.findings[index];
+    if (!item) return;
+    const timelineMarkup = (item.timeline || []).slice(0, 4).map(event => `
+      <li><strong>${event.version}</strong> · ${new Date(event.changed_at).toLocaleString()}<br><span class="muted">${event.summary}</span></li>
+    `).join('');
+    scanDetail.innerHTML = `
+      <span class="severity ${severityClass(item.skill)}">${item.skill.scan_summary?.severity || 'low'}</span>
+      <h4>${item.skill.name}</h4>
+      <p><strong>Owner:</strong> ${item.skill.owner}</p>
+      <p><strong>Security level:</strong> ${item.skill.security_level}</p>
+      <p><strong>Latest score:</strong> ${item.skill.scan_summary?.score || 0}</p>
+      <p><strong>Findings:</strong> ${item.skill.scan_summary?.findings || 0}</p>
+      <p><strong>Timeline</strong></p>
+      <ul class="timeline-list">${timelineMarkup}</ul>
+    `;
+  };
+
+  renderDetail(0);
+  document.querySelectorAll('.scan-item').forEach(item => item.addEventListener('click', () => {
+    document.querySelectorAll('.scan-item').forEach(node => node.classList.remove('active'));
+    item.classList.add('active');
+    renderDetail(Number(item.dataset.index));
+  }));
+}
+
+function syncCompareFromCheckbox(box) {
+  const selected = Array.from(document.querySelectorAll('.compare-toggle:checked')).map(node => node.dataset.skill);
+  if (selected.length > 2) {
+    box.checked = false;
+    return;
+  }
+  if (selected[0]) compareA.value = selected[0];
+  if (selected[1]) compareB.value = selected[1];
+  if (!selected[1] && state.skills[1]) compareB.value = state.skills[1].id;
+  renderComparison();
+}
+
+async function refreshData(query = '') {
+  const [skillsResp, categoriesResp, statsResp] = query
+    ? await Promise.all([api(`/api/search?q=${encodeURIComponent(query)}`), api('/api/categories'), api('/api/stats')])
+    : await Promise.all([api('/api/skills'), api('/api/categories'), api('/api/stats')]);
+
+  state.skills = query ? skillsResp.results : skillsResp.skills;
+  state.categories = categoriesResp.categories;
+  state.stats = { ...statsResp, categories: categoriesResp.categories.length };
+  syncStatus.textContent = `Last live sync: ${new Date().toLocaleTimeString()}`;
+  opsStatus.textContent = 'API online';
+
+  renderStats();
+  renderSkills();
+  populateCategories();
+  populateCompare();
+  await renderComparison();
+  await enrichFindings(state.skills);
+}
+
+searchInput.addEventListener('input', async e => {
+  await refreshData(e.target.value.trim());
+});
+compareA.addEventListener('change', renderComparison);
+compareB.addEventListener('change', renderComparison);
+document.querySelectorAll('[data-scroll]').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelector(btn.dataset.scroll).scrollIntoView({ behavior: 'smooth' });
+}));
+document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', () => {
+  document.querySelectorAll('.nav-link').forEach(node => node.classList.remove('active'));
+  link.classList.add('active');
+}));
+
+refreshData().catch(error => {
+  console.error(error);
+  opsStatus.textContent = 'API error';
+  syncStatus.textContent = error.message;
+  scanDetail.innerHTML = `<p class="muted">Failed to load live registry: ${error.message}</p>`;
+});
