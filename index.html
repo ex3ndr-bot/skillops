@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillOps Enterprise Platform</title>
+  <meta name="description" content="Enterprise skill governance, scanning, and comparison dashboard" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div>
+          <p class="eyebrow">Enterprise Console</p>
+          <h1>SkillOps</h1>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <button class="nav-item active" data-target="overview"><span>Overview</span><i></i></button>
+        <button class="nav-item" data-target="skills"><span>Skill Catalog</span><i></i></button>
+        <button class="nav-item" data-target="security"><span>Security Scans</span><i></i></button>
+        <button class="nav-item" data-target="compare"><span>Compare Skills</span><i></i></button>
+        <button class="nav-item" data-target="updates"><span>Recently Updated</span><i></i></button>
+        <button class="nav-item" data-target="history"><span>Version Timeline</span><i></i></button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="status-card">
+          <p class="muted">Platform posture</p>
+          <strong>Operational</strong>
+          <span class="status-dot">99.98% availability</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Skill governance and delivery</p>
+          <h2>Enterprise skills command center</h2>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.44 1.41-1.42-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"></path></svg>
+            <input id="skillSearch" type="search" placeholder="Search skills, owners, tags, controls..." />
+          </label>
+          <button class="ghost-btn" id="sidebarToggle">Menu</button>
+        </div>
+      </header>
+
+      <section class="panel active" id="overview">
+        <div class="hero-card glass">
+          <div>
+            <p class="eyebrow">Q1 2026 operating snapshot</p>
+            <h3>Trusted skill delivery at enterprise scale</h3>
+            <p class="hero-copy">Track rollout health, compare readiness, inspect security posture, and review version movement across the platform.</p>
+          </div>
+          <div class="hero-badges">
+            <span>412 active skills</span>
+            <span>27 business units</span>
+            <span>4.2M monthly executions</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><p>Active Skills</p><strong class="counter" data-target="412">0</strong><span class="trend positive">+18 this month</span></article>
+          <article class="stat-card"><p>Security Coverage</p><strong><span class="counter" data-target="98">0</span>%</strong><span class="trend positive">+6.4% audit completion</span></article>
+          <article class="stat-card"><p>Avg. Compliance Score</p><strong><span class="counter" data-target="94">0</span>/100</strong><span class="trend positive">+3.1 quarter-over-quarter</span></article>
+          <article class="stat-card"><p>Open High Risks</p><strong class="counter" data-target="7">0</strong><span class="trend negative">-5 since last review</span></article>
+        </div>
+
+        <div class="overview-grid">
+          <section class="card wide">
+            <div class="section-head"><div><p class="eyebrow">Featured catalog</p><h3>Top performing skills</h3></div><span class="pill">Live filter enabled</span></div>
+            <div id="skillsGrid" class="skills-grid"></div>
+          </section>
+          <section class="card">
+            <div class="section-head"><div><p class="eyebrow">Recently updated</p><h3>Change feed</h3></div></div>
+            <div id="updatesFeed" class="feed-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel" id="skills">
+        <div class="section-head sticky-head"><div><p class="eyebrow">Skill catalog</p><h3>Browse and filter enterprise skills</h3></div><div class="legend"><span><i class="dot dot-high"></i> High adoption</span><span><i class="dot dot-medium"></i> Medium</span><span><i class="dot dot-low"></i> Emerging</span></div></div>
+        <div id="catalogGrid" class="skills-grid catalog-grid"></div>
+      </section>
+
+      <section class="panel" id="security">
+        <div class="section-head"><div><p class="eyebrow">Security scans</p><h3>Risk detail and remediation status</h3></div><span class="pill">Color-coded severity</span></div>
+        <div class="security-layout"><div id="scanList" class="scan-list"></div><article class="scan-detail card" id="scanDetail"></article></div>
+      </section>
+
+      <section class="panel" id="compare">
+        <div class="section-head"><div><p class="eyebrow">Skill comparison</p><h3>Select two skills for side-by-side review</h3></div></div>
+        <div class="compare-controls card">
+          <label><span>Skill A</span><select id="compareA"></select></label>
+          <label><span>Skill B</span><select id="compareB"></select></label>
+        </div>
+        <div id="compareGrid" class="compare-grid"></div>
+      </section>
+
+      <section class="panel" id="updates">
+        <div class="section-head"><div><p class="eyebrow">Recent platform activity</p><h3>Update stream</h3></div></div>
+        <div class="card"><div id="fullUpdatesFeed" class="feed-list expanded"></div></div>
+      </section>
+
+      <section class="panel" id="history">
+        <div class="section-head"><div><p class="eyebrow">Version history</p><h3>Release timeline with visual diff indicators</h3></div></div>
+        <div id="timeline" class="timeline"></div>
+      </section>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
